@@ -6,26 +6,27 @@ import android.content.Intent;
 import android.os.Handler;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import br.com.zenitech.zbina.SecondPlane.SendNumberWorker;
 
 public class IncomingCallReceiver extends BroadcastReceiver {
-
-    // Declaração das constantes da URL
-    private static final String BASE_URL = "https://zcall.com.br/zcall/chamada1.php";
-    private static final String PARAM_ID_ZCALL = "idzcall=13";
-    private static final String PARAM_UNIDADE = "unidade=3";
-    private static final String PARAM_RAMAL = "ramal=000";
-
+/*
+* Interceptador de chamadas
+*
+* */
     @Override
     public void onReceive(Context context, Intent intent) {
-        String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
+        String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);                       //pega o estado da chamada como extra
         if (TelephonyManager.EXTRA_STATE_RINGING.equals(state)) {
-            String incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
-            if (incomingNumber != null) {
-                sendNumberToServer(incomingNumber);
+            //se o estado for igual a ringing (tocando
+            String incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER); //passa o número para uma variável (icomingNumber)
+
+            if (incomingNumber != null) {   //verifica se o número não é nulo
+
+                scheduleSendNumber(context, incomingNumber);                                       //manda pra atividade de segundoo plano pra  envio do número
                 // Log imediatamente se o número estiver disponível
                 Log.d("IncomingCallReceiver", "Chamada recebida de: " + incomingNumber);
             } else {
@@ -34,40 +35,22 @@ public class IncomingCallReceiver extends BroadcastReceiver {
                     String delayedIncomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
                     if (delayedIncomingNumber != null) {
                         Log.d("IncomingCallReceiver", "Chamada recebida de: " + delayedIncomingNumber);
-                        sendNumberToServer(delayedIncomingNumber);
-                    } else {
-
+                        scheduleSendNumber(context, delayedIncomingNumber);
                     }
                 }, 1000); // 1 segundo de atraso
             }
         }
     }
 
-    private void sendNumberToServer(String phoneNumber) {
-        String fullUrl = BASE_URL + "?" + PARAM_ID_ZCALL + "&" + PARAM_UNIDADE + "&" + PARAM_RAMAL + "&numero=" + phoneNumber;
-        Log.d("IncomingCallReceiver", "Enviando número para o servidor: " + fullUrl);
+    private void scheduleSendNumber(Context context, String phoneNumber) { //passa o número para o worker que vai enviar via Api
+        Data inputData = new Data.Builder()
+                .putString("phoneNumber", phoneNumber)
+                .build();
 
-        new Thread(() -> {
-            try {
-                URL url = new URL(fullUrl);
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                try {
-                    urlConnection.setRequestMethod("GET");
-                    int responseCode = urlConnection.getResponseCode();
-                    if (responseCode == HttpURLConnection.HTTP_OK) {
-                        Log.d("IncomingCallReceiver", "Número enviado com sucesso");
-                    } else {
-                        Log.d("IncomingCallReceiver", "Erro ao enviar número, código de resposta: " + responseCode);
-                    }
-                } finally {
-                    urlConnection.disconnect();
-                }
-            } catch (IOException e) {
-                Log.e("IncomingCallReceiver", "Erro ao enviar número para o servidor", e);
-            }
-        }).start();
+        OneTimeWorkRequest sendNumberWorkRequest = new OneTimeWorkRequest.Builder(SendNumberWorker.class) // iniciliza o worker com o data
+                .setInputData(inputData)
+                .build();
+
+        WorkManager.getInstance(context).enqueue(sendNumberWorkRequest);
     }
 }
-
-
-
