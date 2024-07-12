@@ -3,6 +3,8 @@ package br.com.zenitech.zbina;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.widget.TextView;
+
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -11,7 +13,14 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import br.com.zenitech.zbina.Prefs.Prefs;
+
 public class MainActivity extends AppCompatActivity {
+
+    // Declaração da variável Prefs para gerenciar as preferências do aplicativo
+    private Prefs prefs;
+    // Declaração da variável TextView para exibir a chave
+    private TextView txtChave;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +32,18 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // Inicializa o Prefs para acessar as preferências do aplicativo
+        prefs = new Prefs(this);
+
+        // Inicializa o TextView a partir do layout
+        txtChave = findViewById(R.id.txtChave);
+
+        // Obtém a chave das preferências e define o texto do TextView
+        String chave = prefs.getChaveApp();
+        if (chave != null) {
+            txtChave.setText(chave);
+        }
 
         // Solicita as permissões necessárias
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED
