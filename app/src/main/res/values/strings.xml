@@ -2,10 +2,10 @@
     <string name="app_name">Zbina</string>
 
 
-        <string name="id">ID</string>
-        <string name="unidade">Unidade</string>
-        <string name="avancar">Avançar</string>
-        <string name="chave">Chave</string>
-        <string name="btn_get_calls">Obter Chamadas</string>
-    </resources>
+    <string name="id">ID</string>
+    <string name="unidade">Unidade</string>
+    <string name="avancar">Avançar</string>
+    <string name="chave">Chave</string>
+    <string name="btn_get_calls">Obter Chamadas</string>
+</resources>
 

@@ -1,5 +1,6 @@
 package br.com.zenitech.zbina.SecondPlane;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -75,6 +76,7 @@ public class SendNumberWorker extends Worker {
         Call<String> call = apiService.enviarNumero("bina", "", "", "", "", phoneNumber, "", prefs.getIdUnidade(), prefs.getIdEmpresa(), prefs.getChaveApp());
 
         call.enqueue(new Callback<String>() {
+            @SuppressLint("LogNotTimber")
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
                 // Log das informações enviadas e URL chamada
