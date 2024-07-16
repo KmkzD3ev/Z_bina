@@ -24,3 +24,6 @@ class Prefs(context: Context) {
         get() = prefs.getString("idEmpresa", "")
         set(value) = prefs.edit().putString("idEmpresa", value).apply()
 }
+
+
+// teste do asus vivobook comit
