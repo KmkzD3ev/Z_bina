@@ -13,20 +13,19 @@ import androidx.work.WorkManager;
 import br.com.zenitech.zbina.SecondPlane.SendNumberWorker;
 
 public class IncomingCallReceiver extends BroadcastReceiver {
-/*
-* Interceptador de chamadas
-*
-* */
+    /*
+     * Interceptador de chamadas
+     *
+     * */
     @Override
     public void onReceive(Context context, Intent intent) {
-        String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);                       //pega o estado da chamada como extra
+        String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE); // Pega o estado da chamada como extra
         if (TelephonyManager.EXTRA_STATE_RINGING.equals(state)) {
-            //se o estado for igual a ringing (tocando
-            String incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER); //passa o número para uma variável (icomingNumber)
+            // Se o estado for igual a ringing (tocando)
+            String incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER); // Passa o número para uma variável (incomingNumber)
 
-            if (incomingNumber != null) {   //verifica se o número não é nulo
-
-                scheduleSendNumber(context, incomingNumber);                                       //manda pra atividade de segundoo plano pra  envio do número
+            if (incomingNumber != null) { // Verifica se o número não é nulo
+                scheduleSendNumber(context, incomingNumber); // Manda pra atividade de segundo plano pra envio do número
                 // Log imediatamente se o número estiver disponível
                 Log.d("IncomingCallReceiver", "Chamada recebida de: " + incomingNumber);
             } else {
@@ -42,15 +41,27 @@ public class IncomingCallReceiver extends BroadcastReceiver {
         }
     }
 
-    private void scheduleSendNumber(Context context, String phoneNumber) { //passa o número para o worker que vai enviar via Api
-        Data inputData = new Data.Builder()
-                .putString("phoneNumber", phoneNumber)
-                .build();
+    private void scheduleSendNumber(Context context, String phoneNumber) { // Passa o número para o worker que vai enviar via API
+        if (phoneNumber.startsWith("0")) { // Verifica se o número começa com '0'
+            phoneNumber = phoneNumber.substring(1); // Remove o primeiro '0'
+        }
 
-        OneTimeWorkRequest sendNumberWorkRequest = new OneTimeWorkRequest.Builder(SendNumberWorker.class) // iniciliza o worker com o data
-                .setInputData(inputData)
-                .build();
+        if (phoneNumber.length() >= 2) { // Verifica se o número tem pelo menos 2 dígitos
+            String ddd = phoneNumber.substring(0, 2); // Extrai os dois primeiros dígitos como DDD
+            String remainingNumber = phoneNumber.substring(2); // Extrai o restante do número
 
-        WorkManager.getInstance(context).enqueue(sendNumberWorkRequest);
+            Data inputData = new Data.Builder()
+                    .putString("dddNumero", ddd)
+                    .putString("phoneNumber", remainingNumber)
+                    .build();
+
+            OneTimeWorkRequest sendNumberWorkRequest = new OneTimeWorkRequest.Builder(SendNumberWorker.class) // Inicializa o worker com o data
+                    .setInputData(inputData)
+                    .build();
+
+            WorkManager.getInstance(context).enqueue(sendNumberWorkRequest);
+        } else {
+            Log.e("IncomingCallReceiver", "Número de telefone inválido: " + phoneNumber);
+        }
     }
 }

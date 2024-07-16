@@ -34,28 +34,21 @@ public class SendNumberWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        // Obtém o número de telefone dos dados de entrada
+        String dddNumero = getInputData().getString("dddNumero");
         String phoneNumber = getInputData().getString("phoneNumber");
 
-        // Verifica se o número de telefone não é nulo
-        if (phoneNumber != null) {
-            // Envia o número de telefone para o servidor usando Retrofit
-            sendNumberToServer(phoneNumber);
-
-            // Retorna sucesso se o número foi enviado
+        if (dddNumero != null && phoneNumber != null) {
+            sendNumberToServer(dddNumero, phoneNumber);
             return Result.success();
         } else {
-            // Retorna falha se o número de telefone for nulo
             return Result.failure();
         }
     }
 
-    private void sendNumberToServer(String phoneNumber) {
-        // Configura o interceptor de logging
+    private void sendNumberToServer(String dddNumero, String phoneNumber) {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-        // Configura o cliente OkHttp com timeouts e o interceptor de logging
         OkHttpClient client = new OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
@@ -65,7 +58,6 @@ public class SendNumberWorker extends Worker {
                 .addInterceptor(loggingInterceptor)
                 .build();
 
-        // Configura Retrofit
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://zcall.com.br/gas/")
                 .addConverterFactory(ScalarsConverterFactory.create())
@@ -73,17 +65,15 @@ public class SendNumberWorker extends Worker {
                 .build();
 
         IDados apiService = retrofit.create(IDados.class);
-        Call<String> call = apiService.enviarNumero("bina", "", "", "", "", phoneNumber, "", prefs.getIdUnidade(), prefs.getIdEmpresa(), prefs.getChaveApp());
+        Call<String> call = apiService.enviarNumero("bina", "", "", "", dddNumero, phoneNumber, "", prefs.getIdUnidade(), prefs.getIdEmpresa(), prefs.getChaveApp());
 
         call.enqueue(new Callback<String>() {
             @SuppressLint("LogNotTimber")
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                // Log das informações enviadas e URL chamada
                 Log.d(TAG, "URL chamada: " + call.request().url());
-                Log.d(TAG, "Dados enviados: opcao=bina, aparelho=, linha=, categoria=, ddd_numero=, numero=" + phoneNumber + ", id_chamada=, id_unidade=" + prefs.getIdUnidade() + ", id_empresa=" + prefs.getIdEmpresa() + ", chave=" + prefs.getChaveApp());
+                Log.d(TAG, "Dados enviados: opcao=bina, aparelho=, linha=, categoria=, ddd_numero=" + dddNumero + ", numero=" + phoneNumber + ", id_chamada=, id_unidade=" + prefs.getIdUnidade() + ", id_empresa=" + prefs.getIdEmpresa() + ", chave=" + prefs.getChaveApp());
 
-                // Verifica se a requisição foi feita com sucesso
                 if (response.isSuccessful()) {
                     Log.d(TAG, "Número enviado com sucesso");
                     String responseBody = response.body();
