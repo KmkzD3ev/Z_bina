@@ -114,8 +114,13 @@ public class Autenticacao extends AppCompatActivity {
 
             @Override
             public void onFailure(@NonNull Call<DadosAutenticacao> call, @NonNull Throwable t) {
-                showMsg(String.format("ERRO: %s", t.getMessage()));
-                Log.d("error", "onFailure: " + t.getMessage());;
+                String errorMessage = t.getMessage();
+                if (errorMessage != null && errorMessage.contains("unexpected end of stream")) {
+                    showMsg("Parece que o servidor está lento. Tente novamente.");
+                } else {
+                    showMsg(String.format("ERRO: %s", errorMessage));
+                }
+                Log.d("error", "onFailure: " + errorMessage);
                 llcFormAut.setVisibility(View.VISIBLE);
                 bProgress.setVisibility(View.GONE);
             }
