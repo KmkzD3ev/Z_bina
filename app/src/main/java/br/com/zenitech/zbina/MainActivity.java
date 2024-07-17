@@ -1,11 +1,14 @@
 package br.com.zenitech.zbina;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Process;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -16,11 +19,12 @@ import androidx.core.view.WindowInsetsCompat;
 import br.com.zenitech.zbina.Prefs.Prefs;
 
 public class MainActivity extends AppCompatActivity {
-
-    // Declaração da variável Prefs para gerenciar as preferências do aplicativo
+    //Instancia de banco de dados
     private Prefs prefs;
-    // Declaração da variável TextView para exibir a chave
+    //Instancia do elemento visual de exibiçao da chave do app
     private TextView txtChave;
+    //Instancia do alerta de encerramento
+    private AlertDialog exitDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,20 +36,22 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        // Inicia o serviço de interceptação de chamadas em primeiro plano
+        Intent serviceIntent = new Intent(this, CallInterceptorService.class);
+        ContextCompat.startForegroundService(this, serviceIntent);
 
-        // Inicializa o Prefs para acessar as preferências do aplicativo
+
+        // Inicializa o Prefs para gerenciar as preferências do aplicativo
         prefs = new Prefs(this);
-
-        // Inicializa o TextView a partir do layout
+        // Obtém a referência do TextView do layout
         txtChave = findViewById(R.id.txtChave);
-
-        // Obtém a chave das preferências e define o texto do TextView
+        // Obtém a chave armazenada nas preferências e a exibe no TextView
         String chave = prefs.getChaveApp();
         if (chave != null) {
             txtChave.setText(chave);
         }
 
-        // Solicita as permissões necessárias
+        // Verifica e solicita permissões necessárias para o funcionamento do aplicativo
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{
@@ -55,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Verifica o resultado da solicitação de permissões
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -64,6 +71,40 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 // Permissão negada
             }
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        // Verifica se o diálogo de saída está visível e o descarta se necessário
+        if (exitDialog != null && exitDialog.isShowing()) {
+            exitDialog.dismiss();
+        }
+        // Cria e exibe um diálogo de confirmação de saída
+        exitDialog = new AlertDialog.Builder(this)
+                .setMessage("Deseja realmente sair? O serviço de monitoramento de chamadas será encerrado.")
+                .setCancelable(false)
+                .setPositiveButton("Sim", (dialog, id) -> {
+                    if (exitDialog != null && exitDialog.isShowing()) {
+                        exitDialog.dismiss();
+                        // Descartar o diálogo se estiver visível
+                    }
+                    // Para o serviço de interceptação de chamadas
+                    stopService(new Intent(this, CallInterceptorService.class));
+                    finishAffinity(); // Encerra todas as atividades
+                    System.exit(0); // Encerra o processo
+                })
+                .setNegativeButton("Não", null)
+                .show();
+    }
+
+    @Override
+    protected void onPause() {
+        // Verifica se o diálogo de saída está visível e o descarta para evitar vazamentos de memória
+        super.onPause();
+        if (exitDialog != null && exitDialog.isShowing()) {
+            exitDialog.dismiss();
         }
     }
 }
