@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    card_view:cardCornerRadius="16dp"
+    card_view:cardElevation="6dp"
+    card_view:cardBackgroundColor="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 🔶 Barra laranja superior (tipo uma "toolbar") -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="15dp"
+            android:background="@color/orange_700" />
+
+        <!-- 🔳 Conteúdo -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:divider="@android:color/darker_gray"
+            android:showDividers="middle"
+            android:dividerPadding="6dp">
+
+            <TextView
+                android:id="@+id/log_timestamp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="00/00/0000 00:00:00"
+                android:textColor="@android:color/black"
+                android:textStyle="bold"
+                android:textSize="15sp"
+                android:fontFamily="monospace" />
+
+            <TextView
+                android:id="@+id/log_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="✅ Status: sucesso"
+                android:textColor="@android:color/holo_green_dark"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-medium" />
+
+
+            <TextView
+                android:id="@+id/log_ddd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="DDD: --"
+                android:textColor="@android:color/black"
+                android:textStyle="bold"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/log_numero"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Número: --------"
+                android:textColor="@android:color/black"
+                android:textStyle="bold"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/log_resposta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Resposta: { ... }"
+                android:textColor="@android:color/black"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:fontFamily="monospace" />
+
+            <TextView
+                android:id="@+id/log_erro"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Erro: -"
+                android:textColor="@android:color/holo_red_dark"
+                android:textStyle="bold"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

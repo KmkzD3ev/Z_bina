@@ -9,13 +9,10 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
-    />
-
-
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
+        android:fullBackupContent="false"
         android:icon="@drawable/zbina"
         android:label="@string/app_name"
         android:networkSecurityConfig="@xml/network_security_config"
@@ -23,7 +20,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Zbina"
         tools:targetApi="31">
-
+        <activity
+            android:name=".Fails.Fail_Server"
+            android:exported="false" />
         <activity
             android:name=".SplashScreen"
             android:exported="true">
@@ -35,14 +34,10 @@
         </activity>
         <activity
             android:name=".Auth.Autenticacao"
-            android:exported="true">
-
-        </activity>
+            android:exported="true"></activity>
         <activity
             android:name=".MainActivity"
-            android:exported="true">
-
-        </activity>
+            android:exported="true"></activity>
 
         <receiver
             android:name=".Identificate.IncomingCallReceiver"
@@ -56,11 +51,7 @@
             android:name=".CallInterceptorService"
             android:exported="false"
             android:foregroundServiceType="dataSync"
-            tools:targetApi="34"
-            >
-        </service>
-
+            tools:targetApi="34"></service>
     </application>
-
 
 </manifest>

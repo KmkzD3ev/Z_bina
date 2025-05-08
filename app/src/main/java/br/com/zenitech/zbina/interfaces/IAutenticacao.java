@@ -22,7 +22,9 @@ public interface IAutenticacao {
     );
 
     Retrofit retrofit = new Retrofit.Builder()
-            .baseUrl("http://zcall.com.br/gas/")
+           // .baseUrl("https://zcall.com.br/gas/")
+            .baseUrl("https://appgas.zenitech.com.br/gas/")
             .addConverterFactory(GsonConverterFactory.create())
             .build();
 }
+

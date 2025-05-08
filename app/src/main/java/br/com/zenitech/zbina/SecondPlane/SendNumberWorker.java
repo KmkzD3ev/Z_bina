@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import br.com.zenitech.zbina.Fails.ErrorInterpreter;
 import br.com.zenitech.zbina.Prefs.Prefs;
 import br.com.zenitech.zbina.interfaces.IDados;
 
@@ -21,8 +22,16 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
-public class SendNumberWorker extends Worker {
+import br.com.zenitech.zbina.Fails.SendLogEntry;
+import br.com.zenitech.zbina.Fails.SendLogRepository;
+
+
+
+public class  SendNumberWorker extends Worker {
     private static final String TAG = "SendNumberWorker";
     private Prefs prefs;
 
@@ -59,7 +68,8 @@ public class SendNumberWorker extends Worker {
                 .build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://zcall.com.br/gas/")
+                //.baseUrl("http://zcall.com.br/gas/")
+                .baseUrl("https://appgas.zenitech.com.br/gas/")
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .client(client)
                 .build();
@@ -75,11 +85,54 @@ public class SendNumberWorker extends Worker {
                 Log.d(TAG, "Dados enviados: opcao=bina, aparelho=, linha=, categoria=, ddd_numero=" + dddNumero + ", numero=" + phoneNumber + ", id_chamada=, id_unidade=" + prefs.getIdUnidade() + ", id_empresa=" + prefs.getIdEmpresa() + ", chave=" + prefs.getChaveApp());
 
                 if (response.isSuccessful()) {
+
                     Log.d(TAG, "Número enviado com sucesso");
                     String responseBody = response.body();
                     Log.d(TAG, "Corpo da resposta: " + responseBody);
+
+                    String timestamp = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", new Locale("pt", "BR")).format(new Date());
+
+                    String url = call.request().url().toString();
+
+
+                    SendLogEntry log = new SendLogEntry(
+                            timestamp,
+                            "sucesso",
+                            url,
+                            dddNumero,
+                            phoneNumber,
+                            responseBody,
+                            null
+                    );
+                    new SendLogRepository(getApplicationContext()).saveLog(log);
+
                 } else {
                     Log.d(TAG, "Erro ao enviar número, código de resposta: " + response.code());
+
+                    String timestamp = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", new Locale("pt", "BR")).format(new Date());
+
+                    String url = call.request().url().toString();
+                    String erroDetalhe = null;
+
+                    try {
+                        if (response.errorBody() != null) {
+                            erroDetalhe = response.errorBody().string();
+                        }
+                    } catch (IOException e) {
+                        erroDetalhe = e.toString();
+                    }
+
+                    SendLogEntry log = new SendLogEntry(
+                            timestamp,
+                            "falha",
+                            url,
+                            dddNumero,
+                            phoneNumber,
+                            null,
+                            erroDetalhe
+                    );
+                    new SendLogRepository(getApplicationContext()).saveLog(log);
+
                     try {
                         if (response.errorBody() != null) {
                             Log.d(TAG, "Erro na resposta: " + response.errorBody().string());
@@ -92,6 +145,22 @@ public class SendNumberWorker extends Worker {
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
+                String timestamp = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", new Locale("pt", "BR")).format(new Date());
+
+                String url = call.request().url().toString();
+
+                SendLogEntry log = new SendLogEntry(
+                        timestamp,
+                        "falha",
+                        url,
+                        dddNumero,
+                        phoneNumber,
+                        null,
+                        ErrorInterpreter.gerarMensagemAmigavel(null, t, null)
+
+                );
+                new SendLogRepository(getApplicationContext()).saveLog(log);
+
                 Log.e(TAG, "Erro ao enviar número para o servidor", t);
             }
         });

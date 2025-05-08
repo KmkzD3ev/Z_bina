@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
@@ -11,10 +12,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import br.com.zenitech.zbina.Fails.Fail_Server;
 import br.com.zenitech.zbina.Prefs.Prefs;
 
 public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_CODE = 1;
+
+
 
     // Instância de banco de dados
     private Prefs prefs;
@@ -27,6 +31,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        Button btnLogs = findViewById(R.id.btn_abrir_logs);
+        btnLogs.setOnClickListener(v -> {
+            Intent intent = new Intent(this, Fail_Server.class);
+            startActivity(intent);
+        });
+
 
         // Inicializa elementos da interface
         prefs = new Prefs(this);
